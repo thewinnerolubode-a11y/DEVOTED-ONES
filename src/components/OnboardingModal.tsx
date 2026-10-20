@@ -5,8 +5,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  Copy,
-  Check,
   ExternalLink,
   Sparkles,
   Loader2,
@@ -74,7 +72,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -96,7 +93,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       setIsSubmitted(false);
       setCurrentStep(1);
       setSubmitError(null);
-      setCopiedLink(false);
       setFormData(INITIAL_DATA);
     }
   }, [isOpen, isSubmitted]);
@@ -312,13 +308,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     }
   };
 
-  const copyPlaceholderLink = () => {
-    const placeholderText = '[WhatsApp Community Invite Link Placeholder — Pending Launch Admin Link]';
-    navigator.clipboard.writeText(placeholderText);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
       <div
@@ -406,33 +395,25 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                   Connect directly with fellow young believers, receive daily devotional scriptures, and take part in upcoming study discussions.
                 </p>
 
-                {/* Explicitly designated placeholder */}
                 <div className="rounded-lg bg-[#000000] border border-[#FFD700]/30 p-3 mb-4">
                   <span className="text-[11px] font-mono text-[#FFD700] block break-all font-medium">
-                    [WhatsApp Community Invite Link Placeholder — Pending Launch Admin Link]
+                    chat.whatsapp.com/BeAyO0iD9JE0QWBTc7b2Yq
                   </span>
                   <p className="text-[10px] text-[#FFFFFF]/70 mt-1 font-sans">
-                    *The official WhatsApp link will be activated and emailed to {formData.email} upon public rollout.
+                    *Tap the button below to join. A copy of the invite will also be emailed to {formData.email}.
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={copyPlaceholderLink}
+                  <a
+                    href="https://chat.whatsapp.com/BeAyO0iD9JE0QWBTc7b2Yq?s=cl&p=a&mlu=4&ilr=4"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-colors cursor-pointer w-full"
                   >
-                    {copiedLink ? (
-                      <>
-                        <Check className="h-4 w-4 text-[#000000]" />
-                        <span>Placeholder Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        <span>JOIN OUR WHATSAPP COMMUNITY</span>
-                      </>
-                    )}
-                  </button>
+                    <ExternalLink className="h-4 w-4" />
+                    <span>JOIN THE DEVOTED ONES COMMUNITY</span>
+                  </a>
                 </div>
               </div>
 
