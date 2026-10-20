@@ -12,16 +12,16 @@ import { WhatWeDo } from './components/WhatWeDo';
 import { FinalCta } from './components/FinalCta';
 import { Footer } from './components/Footer';
 import { OnboardingModal } from './components/OnboardingModal';
-import { TestimoniesModal } from './components/TestimoniesModal';
 import { LogoModal } from './components/LogoModal';
+import { TestimonialsSection } from './components/Testimonies section';
+import { TestimoniesPage } from './components/TestimoniesPage';
 
 export default function App() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
-  const [isTestimoniesOpen, setIsTestimoniesOpen] = useState(false);
   const [isLogoOpen, setIsLogoOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<'home' | 'testimonies'>('home');
 
   const handleOpenJoin = () => {
-    setIsTestimoniesOpen(false);
     setIsLogoOpen(false);
     setIsOnboardingOpen(true);
   };
@@ -32,11 +32,11 @@ export default function App() {
 
   const handleOpenTestimonies = () => {
     setIsLogoOpen(false);
-    setIsTestimoniesOpen(true);
+    setCurrentPage('testimonies');
   };
 
-  const handleCloseTestimonies = () => {
-    setIsTestimoniesOpen(false);
+  const handleBackHome = () => {
+    setCurrentPage('home');
   };
 
   const handleOpenLogo = () => {
@@ -49,52 +49,36 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#FFFFFF] flex flex-col selection:bg-[#FFD700] selection:text-[#000000]">
-      {/* 3-Zone Navigation */}
       <Navbar
         onOpenJoin={handleOpenJoin}
         onOpenTestimonies={handleOpenTestimonies}
         onOpenLogo={handleOpenLogo}
       />
 
-      {/* Main Homepage Flow */}
-      <main className="flex-1">
-        {/* 1. Hero */}
-        <Hero
-          onOpenJoin={handleOpenJoin}
-          onOpenTestimonies={handleOpenTestimonies}
-          onOpenLogo={handleOpenLogo}
-        />
+      {currentPage === 'home' ? (
+        <main className="flex-1">
+          <Hero
+            onOpenJoin={handleOpenJoin}
+            onOpenTestimonies={handleOpenTestimonies}
+            onOpenLogo={handleOpenLogo}
+          />
+          <About />
+          <DevotedLife />
+          <WhatWeDo />
+          <TestimonialsSection onReadAll={handleOpenTestimonies} />
+          <FinalCta onOpenJoin={handleOpenJoin} />
+        </main>
+      ) : (
+        <main className="flex-1">
+          <TestimoniesPage onBack={handleBackHome} />
+        </main>
+      )}
 
-        {/* 2. About */}
-        <About />
+      <Footer onOpenLogo={handleOpenLogo} />
 
-        {/* 3. The Devoted Life */}
-        <DevotedLife />
-
-        {/* 4. What We Do */}
-        <WhatWeDo />
-
-        {/* 5. Final CTA */}
-        <FinalCta
-          onOpenJoin={handleOpenJoin}
-        />
-      </main>
-
-      {/* 6. Footer */}
-      <Footer
-        onOpenLogo={handleOpenLogo}
-      />
-
-      {/* Overlays / Modals */}
       <OnboardingModal
         isOpen={isOnboardingOpen}
         onClose={handleCloseJoin}
-      />
-
-      <TestimoniesModal
-        isOpen={isTestimoniesOpen}
-        onClose={handleCloseTestimonies}
-        onOpenJoin={handleOpenJoin}
       />
 
       <LogoModal
