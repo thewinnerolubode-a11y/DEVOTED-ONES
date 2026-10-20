@@ -9,6 +9,7 @@ import {
   Check,
   ExternalLink,
   Sparkles,
+  Loader2,
 } from 'lucide-react';
 import { OnboardingData, FormErrors, OccupationType } from '../types';
 import { BrandLogo } from './BrandLogo';
@@ -17,6 +18,10 @@ interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const APPS_SCRIPT_URL: string =
+  (import.meta as any).env?.VITE_APPS_SCRIPT_URL ||
+  'https://script.google.com/macros/s/AKfycbwBIGZM_l67mgUtIlrYKGgQGSSY0e2GRQaCB-1AWOUiGxbzOmVxdKqPVDFH7332FhwWog/exec';
 
 const MONTHS = [
   'January',
@@ -70,6 +75,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Sync draft to local storage
   useEffect(() => {
@@ -81,6 +88,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       }
     }
   }, [formData, isSubmitted]);
+
+  // After a successful submission, reset the form once the modal is closed.
+  // (Reset is deferred to close so the success screen can still show the submitted email.)
+  useEffect(() => {
+    if (!isOpen && isSubmitted) {
+      setIsSubmitted(false);
+      setCurrentStep(1);
+      setSubmitError(null);
+      setCopiedLink(false);
+      setFormData(INITIAL_DATA);
+    }
+  }, [isOpen, isSubmitted]);
 
   // Handle ESC key and scroll lock
   useEffect(() => {
@@ -212,7 +231,26 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     }
   };
 
-  const handleFinalSubmit = () => {
+  // Build the payload with the exact field names expected by the Apps Script backend.
+  const buildPayload = () => ({
+    fullName: formData.fullName,
+    preferredName: formData.preferredName,
+    dateOfBirth: `${formData.birthMonth} ${formData.birthDay}`.trim(),
+    gender: formData.gender,
+    townCity: formData.city,
+    currentLocation: formData.currentLocation,
+    phoneNumber: formData.phone,
+    emailAddress: formData.email,
+    occupationStatus: formData.occupation,
+    courseProfession: formData.professionOrCourse,
+    skills: formData.skills,
+    schoolOfStudy: formData.schoolOfStudy,
+    faithLearningInterests: formData.faithQuestions,
+    faithJourneyStart: formData.walkStartedWhen,
+    spiritualGoals: formData.spiritualGoals,
+  });
+
+  const handleFinalSubmit = async () => {
     // Validate all steps
     if (!validateStep1()) {
       setCurrentStep(1);
@@ -227,13 +265,50 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
       return;
     }
 
-    // Mark as submitted
-    setIsSubmitted(true);
+    setSubmitError(null);
+    setIsSubmitting(true);
+
     try {
-      localStorage.removeItem('devoted_ones_onboarding_draft');
-      localStorage.setItem('devoted_ones_member', JSON.stringify(formData));
-    } catch {
-      // ignore
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        // Apps Script cannot answer the CORS preflight for application/json,
+        // so we send the JSON string as text/plain and parse it server-side.
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(buildPayload()),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      // Apps Script may still return JSON containing an `error` field.
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {
+        // non-JSON response is acceptable
+      }
+      if (data && data.error) {
+        throw new Error(String(data.error));
+      }
+
+      // Success
+      setIsSubmitted(true);
+      try {
+        localStorage.removeItem('devoted_ones_onboarding_draft');
+        localStorage.setItem('devoted_ones_member', JSON.stringify(formData));
+      } catch {
+        // ignore
+      }
+    } catch (err: any) {
+      // Failure: preserve the user's information and surface an error.
+      setSubmitError(
+        err?.message
+          ? `We couldn't submit your registration: ${err.message}. Please try again.`
+          : "We couldn't submit your registration. Please check your connection and try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -843,7 +918,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               <button
                 type="button"
                 onClick={handleBack}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-[#FFFFFF]/80 hover:text-[#FFFFFF] bg-[#FFFFFF]/5 hover:bg-[#FFFFFF]/10 transition-colors cursor-pointer"
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold text-[#FFFFFF]/80 hover:text-[#FFFFFF] bg-[#FFFFFF]/5 hover:bg-[#FFFFFF]/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span>Back</span>
@@ -862,14 +938,31 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                 <ArrowRight className="h-4 w-4" />
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={handleFinalSubmit}
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all shadow-[0_4px_20px_rgba(255,215,0,0.25)] active:scale-[0.98] cursor-pointer"
-              >
-                <span>JOIN THE DEVOTED ONES</span>
-                <Sparkles className="h-4 w-4" />
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                {submitError && (
+                  <p className="text-xs text-[#F00020] flex items-center gap-1 font-sans max-w-xs text-right">
+                    <AlertCircle className="h-3 w-3 shrink-0" /> {submitError}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={isSubmitting}
+                  className="inline-flex items-center gap-2 px-7 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all shadow-[0_4px_20px_rgba(255,215,0,0.25)] active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>JOINING…</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>JOIN THE DEVOTED ONES</span>
+                      <Sparkles className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             )}
           </div>
         )}
