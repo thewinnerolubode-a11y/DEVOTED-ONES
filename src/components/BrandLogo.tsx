@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logoPng from '../assets/logo.png';
 
 interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -56,7 +55,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     '2xl': 'text-4xl sm:text-5xl md:text-6xl',
   };
 
-  const currentSrc = customLogo || logoPng;
+  // Official logo lives in /public and is served at the site root by Vite.
+  // This path works in both `npm run dev` and the production build.
+  const OFFICIAL_LOGO_SRC = '/official-logo.png';
+  const currentSrc = customLogo || OFFICIAL_LOGO_SRC;
 
   return (
     <div
