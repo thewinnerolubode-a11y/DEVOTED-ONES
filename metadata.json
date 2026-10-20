@@ -1,0 +1,6 @@
+{
+  "name": "THE DEVOTED ONES",
+  "description": "A Christian youth community raising young people to love God, live by His Word, and grow intentionally in every area of life.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

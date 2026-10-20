@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'HYPERBONNARDREGULAR';
+  src: url('/fonts/HyperbonnardRegular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Hyperbonnard';
+  src: url('/fonts/HyperbonnardRegular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'HYPERBONNARDREGULAR', 'Hyperbonnard', system-ui, -apple-system, sans-serif;
+  --font-hyperbonnard: 'HYPERBONNARDREGULAR', 'Hyperbonnard', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+
+  --color-brand-black: #000000;
+  --color-brand-white: #FFFFFF;
+  --color-brand-gold: #FFD700;
+  --color-brand-red: #F00020;
+  --color-brand-orange: #FD7000;
+}
+
+.font-hyperbonnard {
+  font-family: 'HYPERBONNARDREGULAR', 'Hyperbonnard', system-ui, -apple-system, sans-serif;
+}
+
+.font-mono-accent {
+  font-family: 'Space Mono', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+body {
+  background-color: #000000;
+  color: #FFFFFF;
+}
+
+::selection {
+  background-color: #FFD700;
+  color: #000000;
+}
