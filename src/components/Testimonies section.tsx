@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { testimoniesData } from '../data/testimoniesData';
 
@@ -23,35 +24,52 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onRead
   return (
     <section className="bg-[#000000] text-[#FFFFFF] py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
           <h2 className="font-hyperbonnard text-3xl sm:text-4xl lg:text-5xl tracking-wide uppercase text-[#FFD700] mb-3">
             Testimonies
           </h2>
           <p className="text-sm sm:text-base text-[#FFFFFF]/80 font-sans max-w-2xl mx-auto leading-relaxed">
             Reflections from members of THE DEVOTED ONES on how God's Word is shaping their walk with Him.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-12">
-          {previews.map((t) => (
-            <article
+          {previews.map((t, idx) => (
+            <motion.article
               key={t.id}
-              className="rounded-2xl border border-[#FFD700]/25 bg-[#000000] p-6 flex flex-col"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="rounded-2xl border border-[#000000]/15 bg-[#FFD700] p-6 flex flex-col shadow-[0_4px_24px_rgba(0,0,0,0.35)] hover:shadow-[0_12px_32px_rgba(255,215,0,0.3)] transition-all cursor-default"
             >
-              <h3 className="font-hyperbonnard text-xl sm:text-2xl tracking-wide uppercase text-[#FFFFFF] mb-1">
+              <h3 className="font-hyperbonnard text-xl sm:text-2xl tracking-wide uppercase text-[#000000] mb-1">
                 {t.name}
               </h3>
-              <p className="font-mono text-xs uppercase tracking-wider text-[#FFD700] mb-3">
+              <p className="font-mono text-xs uppercase tracking-wider font-bold text-[#000000]/80 mb-3">
                 {t.devotional}
               </p>
-              <p className="text-sm text-[#FFFFFF]/85 font-sans leading-relaxed flex-1">
+              <p className="text-sm text-[#222222] font-sans leading-relaxed flex-1">
                 {getPreview(t.testimony, PREVIEW_LIMIT)}
               </p>
-            </article>
+            </motion.article>
           ))}
         </div>
 
-        <div className="text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
+        >
           <button
             type="button"
             onClick={onReadAll}
@@ -60,7 +78,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({ onRead
             <span>Read All Testimonies</span>
             <ArrowRight className="h-4 w-4" />
           </button>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

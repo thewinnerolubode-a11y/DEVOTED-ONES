@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Heart, Compass, TrendingUp, Sparkles } from 'lucide-react';
 
 interface Pillar {
@@ -39,7 +40,13 @@ export const DevotedLife: React.FC = () => {
   return (
     <section id="devoted-life" className="py-20 md:py-24 border-t border-[#FFD700]/20 bg-[#000000]">
       <div className="mx-auto max-w-6xl px-6 lg:px-8">
-        <div className="max-w-2xl mb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5 }}
+          className="max-w-2xl mb-14"
+        >
           <span className="font-mono text-xs font-semibold tracking-widest uppercase text-[#FFD700] mb-2 block">
             CORE FOUNDATION
           </span>
@@ -49,33 +56,38 @@ export const DevotedLife: React.FC = () => {
           <p className="mt-3 text-[#FFFFFF]/80 text-base">
             Four commitments that shape who we are and how we grow together.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {pillars.map((pillar) => {
+          {pillars.map((pillar, idx) => {
             const Icon = pillar.icon;
             return (
-              <div
+              <motion.div
                 key={pillar.title}
-                className="group relative rounded-xl border border-[#FFD700]/25 bg-[#000000] p-7 transition-all duration-300 hover:border-[#FFD700] hover:shadow-[0_0_20px_rgba(255,215,0,0.1)]"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className="group relative rounded-xl border border-[#000000]/15 bg-[#FFD700] p-7 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(255,215,0,0.3)] shadow-[0_4px_24px_rgba(0,0,0,0.35)] cursor-default"
               >
                 <div className="flex items-center justify-between mb-8">
-                  <span className="font-mono text-xs tracking-wider text-[#FFD700] font-bold">
+                  <span className="font-mono text-sm tracking-wider font-extrabold text-[#000000]">
                     {pillar.number}
                   </span>
-                  <div className="p-2.5 rounded-lg bg-[#FFD700]/10 text-[#FFD700] group-hover:bg-[#FFD700] group-hover:text-[#000000] transition-colors">
+                  <div className="p-2.5 rounded-lg bg-[#000000] text-[#FFD700] shadow-sm transition-transform duration-300 group-hover:scale-105">
                     <Icon className="h-4 w-4" />
                   </div>
                 </div>
 
-                <h3 className="font-hyperbonnard text-xl sm:text-2xl tracking-wide text-[#FFFFFF] group-hover:text-[#FFD700] uppercase mb-3 transition-colors">
+                <h3 className="font-hyperbonnard text-xl sm:text-2xl tracking-wide text-[#000000] uppercase mb-3">
                   {pillar.title}
                 </h3>
 
-                <p className="text-sm text-[#FFFFFF]/80 leading-relaxed font-normal">
+                <p className="text-sm text-[#222222] leading-relaxed font-normal">
                   {pillar.description}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
         </div>
