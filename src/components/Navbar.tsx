@@ -2,58 +2,61 @@ import React, { useState } from 'react';
 import { Menu, X, ArrowRight, BookOpen, Compass, Sparkles } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 
-export type AppPage = 'home' | 'testimonies' | 'ebook' | 'vision';
+export type AppPage = 'home' | 'about' | 'programs' | 'ebook' | 'vision' | 'admin';
 
 interface NavbarProps {
   currentPage: AppPage;
   onNavigate: (page: AppPage, sectionId?: string) => void;
   onOpenJoin: () => void;
-  onOpenTestimonies: () => void;
   onOpenEbook: () => void;
-  onOpenVision: () => void;
-  onOpenLogo?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   currentPage,
   onNavigate,
   onOpenJoin,
-  onOpenTestimonies,
   onOpenEbook,
-  onOpenVision,
-  onOpenLogo,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleNavClick = (action: () => void) => {
+  const handleNavAction = (action: () => void) => {
     setMobileMenuOpen(false);
     action();
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#FFD700]/20 bg-[#000000]/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black/95 backdrop-blur-md">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
-          {/* Logo & Brand Name */}
-          <div className="flex items-center mr-6 lg:mr-10">
-            <BrandLogo
-              size="sm"
-              showText={true}
-              interactive={true}
-              onClick={() => onNavigate('home')}
-              className="cursor-pointer"
-            />
-          </div>
-
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 font-mono text-xs uppercase tracking-wider">
+        <div className="flex h-20 items-center justify-between gap-4">
+          {/* 1. Logo & Brand Area */}
+          <div className="flex items-center shrink-0">
             <button
               type="button"
-              onClick={() => onNavigate('home', 'about')}
-              className={`transition-colors cursor-pointer ${
-                currentPage === 'home'
-                  ? 'text-[#FFFFFF]/85 hover:text-[#FFD700]'
-                  : 'text-[#FFFFFF]/70 hover:text-[#FFD700]'
+              onClick={() => handleNavAction(() => onNavigate('home'))}
+              className="flex items-center gap-3 cursor-pointer group focus:outline-none"
+              title="THE DEVOTED ONES - Home"
+            >
+              <BrandLogo size="sm" showText={true} interactive={false} />
+            </button>
+          </div>
+
+          {/* 2. Desktop Navigation Links (STRICTLY ONE LINE, NO WRAPPING) */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 whitespace-nowrap text-xs font-semibold uppercase tracking-wider text-white/80">
+            <button
+              type="button"
+              onClick={() => onNavigate('home')}
+              className={`hover:text-[#FFD700] transition-colors cursor-pointer py-1 ${
+                currentPage === 'home' ? 'text-[#FFD700] font-bold' : 'text-white/75'
+              }`}
+            >
+              Home
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onNavigate('about')}
+              className={`hover:text-[#FFD700] transition-colors cursor-pointer py-1 ${
+                currentPage === 'about' ? 'text-[#FFD700] font-bold' : 'text-white/75'
               }`}
             >
               About
@@ -61,94 +64,53 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <button
               type="button"
-              onClick={() => onNavigate('home', 'devoted-life')}
-              className={`transition-colors cursor-pointer ${
-                currentPage === 'home'
-                  ? 'text-[#FFFFFF]/85 hover:text-[#FFD700]'
-                  : 'text-[#FFFFFF]/70 hover:text-[#FFD700]'
+              onClick={() => onNavigate('programs')}
+              className={`hover:text-[#FFD700] transition-colors cursor-pointer py-1 ${
+                currentPage === 'programs' ? 'text-[#FFD700] font-bold' : 'text-white/75'
               }`}
             >
-              The Devoted Life
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('home', 'what-we-do')}
-              className={`transition-colors cursor-pointer ${
-                currentPage === 'home'
-                  ? 'text-[#FFFFFF]/85 hover:text-[#FFD700]'
-                  : 'text-[#FFFFFF]/70 hover:text-[#FFD700]'
-              }`}
-            >
-              What We Do
-            </button>
-
-            <button
-              type="button"
-              onClick={onOpenVision}
-              className={`transition-colors cursor-pointer uppercase inline-flex items-center gap-1.5 ${
-                currentPage === 'vision'
-                  ? 'text-[#FFD700] font-bold border-b border-[#FFD700] pb-0.5'
-                  : 'text-[#FFFFFF]/85 hover:text-[#FFD700]'
-              }`}
-            >
-              <Compass className="h-3 w-3 text-[#FFD700]" />
-              <span>Our Vision</span>
+              Programs
             </button>
 
             <button
               type="button"
               onClick={onOpenEbook}
-              className={`transition-colors cursor-pointer uppercase inline-flex items-center gap-1.5 ${
-                currentPage === 'ebook'
-                  ? 'text-[#FFD700] font-bold border-b border-[#FFD700] pb-0.5'
-                  : 'text-[#FFFFFF]/85 hover:text-[#FFD700]'
-              }`}
+              className="hover:text-[#FFD700] transition-colors cursor-pointer py-1 text-white/75 flex items-center gap-1.5"
             >
-              <BookOpen className="h-3 w-3 text-[#FFD700]" />
-              <span>Devotional E-Book</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onOpenTestimonies}
-              className={`transition-colors cursor-pointer uppercase ${
-                currentPage === 'testimonies'
-                  ? 'text-[#FFD700] font-bold border-b border-[#FFD700] pb-0.5'
-                  : 'text-[#FFFFFF]/85 hover:text-[#FFD700]'
-              }`}
-            >
-              Testimonies
+              <BookOpen className="h-3.5 w-3.5 text-[#FFD700]" />
+              <span>Get the Devotional</span>
             </button>
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* 3. Primary CTA Button (Visually Separated) */}
+          <div className="hidden md:flex items-center gap-4 shrink-0">
+            <div className="h-5 w-px bg-white/20" aria-hidden="true" />
             <button
               type="button"
               onClick={onOpenJoin}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all shadow-[0_2px_15px_rgba(255,215,0,0.25)] active:scale-[0.98] cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-black bg-[#FFD700] hover:bg-white hover:text-black transition-all shadow-[0_2px_15px_rgba(255,215,0,0.3)] active:scale-[0.98] cursor-pointer"
             >
-              <span>Join Us</span>
+              <span>JOIN US</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex lg:hidden items-center gap-2">
+          {/* 4. Mobile Menu Button */}
+          <div className="flex items-center gap-3 md:hidden">
             <button
               type="button"
               onClick={onOpenJoin}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all cursor-pointer mr-1"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-black bg-[#FFD700] hover:bg-white transition-colors cursor-pointer"
             >
-              <span>Join</span>
+              <span>JOIN US</span>
             </button>
 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-[#FFFFFF]/80 hover:text-[#FFD700] hover:bg-[#FFFFFF]/5 transition-colors cursor-pointer"
-              aria-label="Toggle navigation menu"
+              className="p-2 rounded-lg text-white hover:text-[#FFD700] hover:bg-white/10 transition-colors cursor-pointer"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -156,77 +118,63 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-b border-[#FFD700]/20 bg-[#000000]/98 px-6 py-6 animate-in slide-in-from-top-2 duration-200">
-          <div className="flex flex-col gap-3 font-mono text-sm uppercase tracking-wider">
+        <div className="md:hidden border-t border-white/10 bg-black/98 px-6 py-6 animate-in slide-in-from-top-4 duration-200">
+          <nav className="flex flex-col gap-4 text-sm font-semibold uppercase tracking-wider">
             <button
               type="button"
-              onClick={() => handleNavClick(() => onNavigate('home', 'about'))}
-              className="text-left text-[#FFFFFF]/90 hover:text-[#FFD700] py-2 transition-colors cursor-pointer"
-            >
-              About
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleNavClick(() => onNavigate('home', 'devoted-life'))}
-              className="text-left text-[#FFFFFF]/90 hover:text-[#FFD700] py-2 transition-colors cursor-pointer"
-            >
-              The Devoted Life
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleNavClick(() => onNavigate('home', 'what-we-do'))}
-              className="text-left text-[#FFFFFF]/90 hover:text-[#FFD700] py-2 transition-colors cursor-pointer"
-            >
-              What We Do
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleNavClick(onOpenVision)}
-              className={`text-left py-2 transition-colors cursor-pointer inline-flex items-center gap-2 ${
-                currentPage === 'vision' ? 'text-[#FFD700] font-bold' : 'text-[#FFFFFF]/90 hover:text-[#FFD700]'
+              onClick={() => handleNavAction(() => onNavigate('home'))}
+              className={`text-left py-2 hover:text-[#FFD700] transition-colors cursor-pointer flex items-center justify-between ${
+                currentPage === 'home' ? 'text-[#FFD700] font-bold' : 'text-white'
               }`}
             >
-              <Compass className="h-4 w-4 text-[#FFD700]" />
-              <span>Our Vision</span>
+              <span>Home</span>
+              {currentPage === 'home' && <span className="text-xs text-[#FFD700]">●</span>}
             </button>
 
             <button
               type="button"
-              onClick={() => handleNavClick(onOpenEbook)}
-              className={`text-left py-2 transition-colors cursor-pointer inline-flex items-center gap-2 ${
-                currentPage === 'ebook' ? 'text-[#FFD700] font-bold' : 'text-[#FFFFFF]/90 hover:text-[#FFD700]'
+              onClick={() => handleNavAction(() => onNavigate('about'))}
+              className={`text-left py-2 hover:text-[#FFD700] transition-colors cursor-pointer flex items-center justify-between ${
+                currentPage === 'about' ? 'text-[#FFD700] font-bold' : 'text-white'
               }`}
+            >
+              <span>About (Who We Are, Vision, Stories)</span>
+              {currentPage === 'about' && <span className="text-xs text-[#FFD700]">●</span>}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleNavAction(() => onNavigate('programs'))}
+              className={`text-left py-2 hover:text-[#FFD700] transition-colors cursor-pointer flex items-center justify-between ${
+                currentPage === 'programs' ? 'text-[#FFD700] font-bold' : 'text-white'
+              }`}
+            >
+              <span>Programs & Fellowships</span>
+              {currentPage === 'programs' && <span className="text-xs text-[#FFD700]">●</span>}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleNavAction(onOpenEbook)}
+              className="text-left py-2 text-white hover:text-[#FFD700] transition-colors cursor-pointer flex items-center gap-2"
             >
               <BookOpen className="h-4 w-4 text-[#FFD700]" />
-              <span>Get Devotional E-Book</span>
+              <span>Get the Devotional</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => handleNavClick(onOpenTestimonies)}
-              className={`text-left py-2 transition-colors cursor-pointer ${
-                currentPage === 'testimonies' ? 'text-[#FFD700] font-bold' : 'text-[#FFFFFF]/90 hover:text-[#FFD700]'
-              }`}
-            >
-              Testimonies
-            </button>
-
-            <div className="pt-4 border-t border-[#FFD700]/15 flex flex-col gap-3">
+            <div className="pt-4 border-t border-white/10 flex flex-col gap-3">
               <button
                 type="button"
-                onClick={() => handleNavClick(onOpenJoin)}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all shadow-[0_2px_15px_rgba(255,215,0,0.25)] active:scale-[0.98] cursor-pointer"
+                onClick={() => handleNavAction(onOpenJoin)}
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-black bg-[#FFD700] hover:bg-white transition-colors cursor-pointer shadow-md"
               >
-                <span>Join The Community</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <span>JOIN THE COMMUNITY</span>
+                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
-          </div>
+          </nav>
         </div>
       )}
     </header>

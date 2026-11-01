@@ -210,13 +210,63 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
     return Object.keys(errs).length === 0;
   };
 
+  const scrollToFirstError = (fieldId: string) => {
+    setTimeout(() => {
+      const el = document.getElementById(fieldId) || document.querySelector('[data-has-error="true"]');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if ('focus' in el && typeof (el as any).focus === 'function') {
+          (el as any).focus();
+        }
+      }
+    }, 50);
+  };
+
   const handleNext = () => {
     if (currentStep === 1) {
-      if (validateStep1()) setCurrentStep(2);
+      if (validateStep1()) {
+        setCurrentStep(2);
+        document.getElementById('onboarding-modal-body')?.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const firstErr = !formData.fullName.trim()
+          ? 'field-fullName'
+          : (!formData.birthDay || !formData.birthMonth)
+          ? 'field-birthMonth'
+          : !formData.city.trim()
+          ? 'field-city'
+          : !formData.currentLocation.trim()
+          ? 'field-currentLocation'
+          : !formData.phone.trim()
+          ? 'field-phone'
+          : 'field-email';
+        scrollToFirstError(firstErr);
+      }
     } else if (currentStep === 2) {
-      if (validateStep2()) setCurrentStep(3);
+      if (validateStep2()) {
+        setCurrentStep(3);
+        document.getElementById('onboarding-modal-body')?.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const firstErr = !formData.occupation
+          ? 'field-occupation'
+          : (formData.occupation === 'Other' && !formData.occupationOtherDetail?.trim())
+          ? 'field-occupationOtherDetail'
+          : !formData.professionOrCourse.trim()
+          ? 'field-professionOrCourse'
+          : 'field-schoolOfStudy';
+        scrollToFirstError(firstErr);
+      }
     } else if (currentStep === 3) {
-      if (validateStep3()) setCurrentStep(4);
+      if (validateStep3()) {
+        setCurrentStep(4);
+        document.getElementById('onboarding-modal-body')?.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const firstErr = !formData.faithQuestions.trim()
+          ? 'field-faithQuestions'
+          : !formData.walkStartedWhen.trim()
+          ? 'field-walkStartedWhen'
+          : 'field-spiritualGoals';
+        scrollToFirstError(firstErr);
+      }
     }
   };
 
@@ -323,8 +373,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               <span className="font-hyperbonnard text-base tracking-wider uppercase text-[#FFD700] block">
                 THE DEVOTED ONES
               </span>
-              <span className="text-xs font-mono uppercase tracking-wider text-[#FFFFFF]/70">
-                Community Onboarding
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#FFFFFF]/70">
+                Community Registration
               </span>
             </div>
           </div>
@@ -342,13 +392,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         {!isSubmitted && (
           <div className="px-6 sm:px-8 pt-5 pb-3 bg-[#000000] border-b border-[#FFD700]/15">
             <div className="flex items-center justify-between text-xs mb-2">
-              <span className="font-mono font-medium uppercase tracking-wider text-[#FFFFFF]/90">
+              <span className="font-semibold uppercase tracking-wider text-[#FFFFFF]/90">
                 {currentStep === 1 && 'Step 01 — About You'}
                 {currentStep === 2 && 'Step 02 — What You Do'}
                 {currentStep === 3 && 'Step 03 — Your Walk With God'}
                 {currentStep === 4 && 'Step 04 — Confirmation & Review'}
               </span>
-              <span className="font-mono font-bold text-[#FFD700]">
+              <span className="font-bold text-[#FFD700]">
                 {currentStep} of 4
               </span>
             </div>
@@ -364,7 +414,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         )}
 
         {/* Modal Body */}
-        <div className="p-6 sm:p-8 overflow-y-auto flex-1">
+        <div id="onboarding-modal-body" className="p-6 sm:p-8 overflow-y-auto flex-1">
           {/* SUCCESS SCREEN */}
           {isSubmitted ? (
             <div className="py-6 text-center animate-in zoom-in-95 duration-300">
@@ -382,7 +432,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
               {/* WhatsApp Community Box */}
               <div className="max-w-lg mx-auto rounded-xl border border-[#FFD700]/40 bg-[#FFD700]/[0.04] p-6 text-left mb-8 shadow-inner">
-                <div className="flex items-center gap-2 mb-2 font-mono text-xs font-bold uppercase tracking-wider text-[#FFD700]">
+                <div className="flex items-center gap-2 mb-2 font-sans text-xs font-bold uppercase tracking-wider text-[#FFD700]">
                   <Sparkles className="h-4 w-4" />
                   <span>Next Step: Official Community Group</span>
                 </div>
@@ -396,7 +446,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                 </p>
 
                 <div className="rounded-lg bg-[#000000] border border-[#FFD700]/30 p-3 mb-4">
-                  <span className="text-[11px] font-mono text-[#FFD700] block break-all font-medium">
+                  <span className="text-[11px] font-sans text-[#FFD700] block break-all font-medium">
                     chat.whatsapp.com/BeAyO0iD9JE0QWBTc7b2Yq
                   </span>
                   <p className="text-[10px] text-[#FFFFFF]/70 mt-1 font-sans">
@@ -440,6 +490,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                     </p>
                   </div>
 
+                  {Object.keys(errors).length > 0 && (
+                    <div className="p-3.5 rounded-xl bg-[#F00020]/15 border border-[#F00020]/40 flex items-start gap-2.5 text-xs text-[#F00020] font-sans">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold">Please complete the required fields highlighted in red below to continue.</p>
+                        <p className="text-white/80 mt-0.5">{Object.values(errors).join(' · ')}</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Full Name */}
                     <div className="sm:col-span-2">
@@ -447,12 +507,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Full Name <span className="text-[#F00020]">*</span>
                       </label>
                       <input
+                        id="field-fullName"
+                        data-has-error={!!errors.fullName}
                         type="text"
                         placeholder="e.g. Winner Olubode"
                         value={formData.fullName}
                         onChange={(e) => updateField('fullName', e.target.value)}
                         className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                          errors.fullName ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          errors.fullName ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                         }`}
                       />
                       {errors.fullName && (
@@ -468,6 +530,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         What do you prefer to be called?
                       </label>
                       <input
+                        id="field-preferredName"
                         type="text"
                         placeholder="e.g. Winner or your nickname"
                         value={formData.preferredName}
@@ -486,9 +549,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                         <select
+                          id="field-birthMonth"
+                          data-has-error={!!errors.dob}
                           value={formData.birthMonth}
                           onChange={(e) => updateField('birthMonth', e.target.value)}
-                          className="w-full text-sm rounded-lg bg-[#000000] border border-[#FFD700]/30 px-3.5 py-2.5 text-[#FFFFFF] focus:outline-none focus:border-[#FFD700] transition-colors"
+                          className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] focus:outline-none transition-colors ${
+                            errors.dob ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          }`}
                         >
                           <option value="" className="bg-[#000000] text-[#FFFFFF]">Select Month</option>
                           {MONTHS.map((m) => (
@@ -499,9 +566,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         </select>
 
                         <select
+                          id="field-birthDay"
+                          data-has-error={!!errors.dob}
                           value={formData.birthDay}
                           onChange={(e) => updateField('birthDay', e.target.value)}
-                          className="w-full text-sm rounded-lg bg-[#000000] border border-[#FFD700]/30 px-3.5 py-2.5 text-[#FFFFFF] focus:outline-none focus:border-[#FFD700] transition-colors"
+                          className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] focus:outline-none transition-colors ${
+                            errors.dob ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          }`}
                         >
                           <option value="" className="bg-[#000000] text-[#FFFFFF]">Select Day</option>
                           {DAYS.map((d) => (
@@ -524,6 +595,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Gender
                       </label>
                       <select
+                        id="field-gender"
                         value={formData.gender}
                         onChange={(e) => updateField('gender', e.target.value as any)}
                         className="w-full text-sm rounded-lg bg-[#000000] border border-[#FFD700]/30 px-3.5 py-2.5 text-[#FFFFFF] focus:outline-none focus:border-[#FFD700] transition-colors"
@@ -541,12 +613,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Town / City <span className="text-[#F00020]">*</span>
                       </label>
                       <input
+                        id="field-city"
+                        data-has-error={!!errors.city}
                         type="text"
                         placeholder="e.g. Lagos, Ibadan, Manchester"
                         value={formData.city}
                         onChange={(e) => updateField('city', e.target.value)}
                         className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                          errors.city ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          errors.city ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                         }`}
                       />
                       {errors.city && (
@@ -562,12 +636,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Current Location <span className="text-[#F00020]">*</span>
                       </label>
                       <input
+                        id="field-currentLocation"
+                        data-has-error={!!errors.currentLocation}
                         type="text"
                         placeholder="e.g. Nigeria, United Kingdom, Texas USA"
                         value={formData.currentLocation}
                         onChange={(e) => updateField('currentLocation', e.target.value)}
                         className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                          errors.currentLocation ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          errors.currentLocation ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                         }`}
                       />
                       {errors.currentLocation && (
@@ -583,12 +659,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Phone Number <span className="text-[#F00020]">*</span>
                       </label>
                       <input
+                        id="field-phone"
+                        data-has-error={!!errors.phone}
                         type="tel"
                         placeholder="+234 801 234 5678"
                         value={formData.phone}
                         onChange={(e) => updateField('phone', e.target.value)}
                         className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                          errors.phone ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          errors.phone ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                         }`}
                       />
                       {errors.phone && (
@@ -604,12 +682,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Email Address <span className="text-[#F00020]">*</span>
                       </label>
                       <input
+                        id="field-email"
+                        data-has-error={!!errors.email}
                         type="email"
                         placeholder="youremail@example.com"
                         value={formData.email}
                         onChange={(e) => updateField('email', e.target.value)}
                         className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                          errors.email ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          errors.email ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                         }`}
                       />
                       {errors.email && (
@@ -634,8 +714,18 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                     </p>
                   </div>
 
+                  {Object.keys(errors).length > 0 && (
+                    <div className="p-3.5 rounded-xl bg-[#F00020]/15 border border-[#F00020]/40 flex items-start gap-2.5 text-xs text-[#F00020] font-sans">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold">Please complete the required fields highlighted in red below to continue.</p>
+                        <p className="text-white/80 mt-0.5">{Object.values(errors).join(' · ')}</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Occupation selection */}
-                  <div>
+                  <div id="field-occupation" data-has-error={!!errors.occupation}>
                     <label className="block text-xs font-semibold text-[#FFFFFF] uppercase tracking-wider mb-2 font-sans">
                       What do you currently do? <span className="text-[#F00020]">*</span>
                     </label>
@@ -650,6 +740,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                             className={`p-3.5 rounded-xl border text-center transition-all cursor-pointer ${
                               isSelected
                                 ? 'bg-[#FFD700]/15 border-[#FFD700] text-[#FFFFFF] font-bold shadow-[0_0_15px_rgba(255,215,0,0.15)]'
+                                : errors.occupation
+                                ? 'bg-[#000000] border-[#F00020]/60 text-[#FFFFFF]/80 hover:border-[#F00020]'
                                 : 'bg-[#000000] border-[#FFD700]/25 text-[#FFFFFF]/80 hover:border-[#FFD700]/60 hover:bg-[#FFD700]/[0.03]'
                             }`}
                           >
@@ -671,11 +763,17 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Please specify <span className="text-[#F00020]">*</span>
                       </label>
                       <input
+                        id="field-occupationOtherDetail"
+                        data-has-error={!!errors.occupationOtherDetail}
                         type="text"
                         placeholder="e.g. Gap year, Freelancing, Seeking opportunities"
                         value={formData.occupationOtherDetail || ''}
                         onChange={(e) => updateField('occupationOtherDetail', e.target.value)}
-                        className="w-full text-sm rounded-lg bg-[#000000] border border-[#FFD700]/30 px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none focus:border-[#FFD700] transition-colors"
+                        className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
+                          errors.occupationOtherDetail
+                            ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]'
+                            : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                        }`}
                       />
                       {errors.occupationOtherDetail && (
                         <p className="text-xs text-[#F00020] mt-1 flex items-center gap-1 font-sans">
@@ -691,6 +789,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                       What is your course of study or profession? <span className="text-[#F00020]">*</span>
                     </label>
                     <input
+                      id="field-professionOrCourse"
+                      data-has-error={!!errors.professionOrCourse}
                       type="text"
                       placeholder={
                         formData.occupation === 'Student'
@@ -700,7 +800,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                       value={formData.professionOrCourse}
                       onChange={(e) => updateField('professionOrCourse', e.target.value)}
                       className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                        errors.professionOrCourse ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                        errors.professionOrCourse
+                          ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]'
+                          : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                       }`}
                     />
                     {errors.professionOrCourse && (
@@ -720,12 +822,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                         Shown because you selected student status.
                       </p>
                       <input
+                        id="field-schoolOfStudy"
+                        data-has-error={!!errors.schoolOfStudy}
                         type="text"
                         placeholder="e.g. University of Lagos, University of Manchester, University of Texas"
                         value={formData.schoolOfStudy}
                         onChange={(e) => updateField('schoolOfStudy', e.target.value)}
                         className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                          errors.schoolOfStudy ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                          errors.schoolOfStudy
+                            ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]'
+                            : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                         }`}
                       />
                       {errors.schoolOfStudy && (
@@ -767,18 +873,32 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                     </p>
                   </div>
 
+                  {Object.keys(errors).length > 0 && (
+                    <div className="p-3.5 rounded-xl bg-[#F00020]/15 border border-[#F00020]/40 flex items-start gap-2.5 text-xs text-[#F00020] font-sans">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold">Please complete the required fields highlighted in red below to continue.</p>
+                        <p className="text-white/80 mt-0.5">{Object.values(errors).join(' · ')}</p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Areas of Christian faith */}
                   <div>
                     <label className="block text-xs font-semibold text-[#FFFFFF] uppercase tracking-wider mb-1.5 font-sans">
                       What areas of the Christian faith would you like to understand better? <span className="text-[#F00020]">*</span>
                     </label>
                     <textarea
+                      id="field-faithQuestions"
+                      data-has-error={!!errors.faithQuestions}
                       rows={3}
                       placeholder="e.g. Hearing God's voice, reading Scripture with depth, prayer & fasting, discovering purpose, purity in relationships..."
                       value={formData.faithQuestions}
                       onChange={(e) => updateField('faithQuestions', e.target.value)}
                       className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors resize-none ${
-                        errors.faithQuestions ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                        errors.faithQuestions
+                          ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]'
+                          : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                       }`}
                     />
                     {errors.faithQuestions && (
@@ -794,12 +914,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                       When did you begin your walk with God? <span className="text-[#F00020]">*</span>
                     </label>
                     <input
+                      id="field-walkStartedWhen"
+                      data-has-error={!!errors.walkStartedWhen}
                       type="text"
                       placeholder="e.g. Recently (few months ago), In high school, Since childhood, or Still seeking"
                       value={formData.walkStartedWhen}
                       onChange={(e) => updateField('walkStartedWhen', e.target.value)}
                       className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors ${
-                        errors.walkStartedWhen ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                        errors.walkStartedWhen
+                          ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]'
+                          : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                       }`}
                     />
                     {errors.walkStartedWhen && (
@@ -815,12 +939,16 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                       What are your spiritual goals? <span className="text-[#F00020]">*</span>
                     </label>
                     <textarea
+                      id="field-spiritualGoals"
+                      data-has-error={!!errors.spiritualGoals}
                       rows={3}
                       placeholder="e.g. Consistency in personal daily quiet time, memorizing scripture, overcoming inconsistency, living boldly on campus..."
                       value={formData.spiritualGoals}
                       onChange={(e) => updateField('spiritualGoals', e.target.value)}
                       className={`w-full text-sm rounded-lg bg-[#000000] border px-3.5 py-2.5 text-[#FFFFFF] placeholder-[#FFFFFF]/40 focus:outline-none transition-colors resize-none ${
-                        errors.spiritualGoals ? 'border-[#F00020] focus:border-[#F00020]' : 'border-[#FFD700]/30 focus:border-[#FFD700]'
+                        errors.spiritualGoals
+                          ? 'border-[#F00020] ring-1 ring-[#F00020]/40 focus:border-[#F00020]'
+                          : 'border-[#FFD700]/30 focus:border-[#FFD700]'
                       }`}
                     />
                     {errors.spiritualGoals && (

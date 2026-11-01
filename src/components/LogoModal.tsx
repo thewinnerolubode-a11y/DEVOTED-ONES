@@ -69,7 +69,7 @@ export const LogoModal: React.FC<LogoModalProps> = ({ isOpen, onClose }) => {
 
         {/* Modal Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] text-xs font-mono uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] text-xs font-sans uppercase tracking-wider mb-3">
             <Sparkles className="h-3.5 w-3.5" />
             <span>Official Brand Identity</span>
           </div>
@@ -90,14 +90,14 @@ export const LogoModal: React.FC<LogoModalProps> = ({ isOpen, onClose }) => {
               className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(255,215,0,0.4)]"
             />
           </div>
-          <p className="text-xs font-mono text-[#FFD700] mt-4">
+          <p className="text-xs font-sans text-[#FFD700] mt-4">
             {customLogo ? 'Custom Uploaded Logo Active' : 'Official Community Emblem (#FFD700)'}
           </p>
         </div>
 
         {/* Success Message Banner */}
         {successMsg && (
-          <div className="mb-4 flex items-center gap-2 p-3 rounded-lg bg-[#FFD700]/15 border border-[#FFD700] text-[#FFD700] text-xs font-mono">
+          <div className="mb-4 flex items-center gap-2 p-3 rounded-lg bg-[#FFD700]/15 border border-[#FFD700] text-[#FFD700] text-xs font-sans">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span>{successMsg}</span>
           </div>
@@ -124,7 +124,7 @@ export const LogoModal: React.FC<LogoModalProps> = ({ isOpen, onClose }) => {
           {customLogo && (
             <button
               onClick={handleReset}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-[#FFD700]/30 text-[#FFFFFF]/80 hover:text-[#FFFFFF] hover:border-[#FFD700] hover:bg-[#FFFFFF]/5 transition-all text-xs font-mono cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-[#FFD700]/30 text-[#FFFFFF]/80 hover:text-[#FFFFFF] hover:border-[#FFD700] hover:bg-[#FFFFFF]/5 transition-all text-xs font-sans cursor-pointer"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Reset to Default Logo</span>

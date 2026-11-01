@@ -22,6 +22,8 @@ interface FormErrors {
   phoneNumber?: string;
 }
 
+const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymhg5xHdsOs_15e2ZxnQCN0VZ3ZxOVhF8zJPzXlfLh3oR6w27NQXznydk0PFNRkz6_2Q/exec';
+
 export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
   onBack,
   onOpenJoin,
@@ -38,6 +40,32 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [downloadInfo, setDownloadInfo] = useState<{
+    downloadUrl: string;
+    fileName: string;
+    devotionalTitle?: string;
+    requestId?: string;
+    emailSent?: boolean;
+    previewUrl?: string;
+  } | null>(null);
+  const [activeDevotional, setActiveDevotional] = useState<{
+    id: string;
+    title: string;
+    description: string;
+    month?: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    fetch('/api/devotional/current')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.title) {
+          setActiveDevotional(data);
+        }
+      })
+      .catch((err) => console.warn('Could not fetch current devotional:', err));
+  }, []);
 
   const validate = (data: FormState): FormErrors => {
     const errs: FormErrors = {};
@@ -56,7 +84,7 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
 
     if (!data.phoneNumber.trim()) {
       errs.phoneNumber = 'WhatsApp / phone number is required';
-    } else if (data.phoneNumber.trim().length < 7) {
+    } else if (data.phoneNumber.trim().replace(/\D/g, '').length < 7) {
       errs.phoneNumber = 'Please enter a valid phone number (min 7 digits)';
     }
 
@@ -77,7 +105,7 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({
       fullName: true,
@@ -92,12 +120,82 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
       return;
     }
 
-    // Frontend validation successful
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setServerError(null);
+
+    // Parallel direct ping to Google Apps Script backend
+    try {
+      fetch(GOOGLE_APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          name: formData.fullName.trim(),
+          email: formData.emailAddress.trim(),
+          whatsapp: formData.phoneNumber.trim(),
+          fullName: formData.fullName.trim(),
+          emailAddress: formData.emailAddress.trim(),
+          phoneNumber: formData.phoneNumber.trim(),
+          whatsappNumber: formData.phoneNumber.trim(),
+        }),
+      }).catch(() => {});
+    } catch {}
+
+    try {
+      const response = await fetch('/api/devotional/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.emailAddress,
+          phone: formData.phoneNumber,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit request. Please try again.');
+      }
+
+      setDownloadInfo({
+        downloadUrl: data.downloadUrl,
+        fileName: data.fileName || 'The-Devoted-Ones-Devotional.pdf',
+        devotionalTitle: data.devotional?.title || 'Devotional E-book',
+        requestId: data.requestId,
+        emailSent: data.emailSent,
+        previewUrl: data.previewUrl,
+      });
+
+      // Automatically initiate download
+      if (data.downloadUrl) {
+        try {
+          const downloadAnchor = document.createElement('a');
+          downloadAnchor.href = data.downloadUrl;
+          downloadAnchor.setAttribute('download', data.fileName || 'The-Devoted-Ones-Devotional.pdf');
+          downloadAnchor.target = '_blank';
+          downloadAnchor.rel = 'noopener noreferrer';
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          document.body.removeChild(downloadAnchor);
+
+          // Track download click
+          fetch('/api/devotional/download-click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId: data.requestId, devotionalId: data.devotional?.id }),
+          }).catch(() => {});
+        } catch (downloadErr) {
+          console.warn('Auto-download error:', downloadErr);
+        }
+      }
+
       setIsSubmitted(true);
-    }, 600);
+    } catch (err: any) {
+      setServerError(err.message || 'Something went wrong. Please check your internet connection.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -108,6 +206,8 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
     });
     setTouched({});
     setErrors({});
+    setServerError(null);
+    setDownloadInfo(null);
     setIsSubmitted(false);
   };
 
@@ -173,23 +273,23 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
 
               <div className="flex items-center justify-between mb-6">
                 <span className="font-mono text-xs uppercase tracking-wider font-extrabold text-[#000000] bg-[#000000]/10 border border-[#000000]/15 px-3 py-1 rounded">
-                  Monthly Edition
+                  {activeDevotional?.month || 'Monthly Edition'}
                 </span>
                 <div className="p-2.5 rounded-lg bg-[#000000] text-[#FFD700]">
                   <BookOpen className="h-5 w-5" />
                 </div>
               </div>
 
-              {/* Book Title Mock */}
+              {/* Book Title Showcase */}
               <div className="p-6 rounded-xl bg-[#000000] text-[#FFFFFF] border border-[#FFD700]/30 shadow-inner mb-6">
                 <span className="font-mono text-[10px] tracking-widest uppercase text-[#FFD700] block mb-1">
-                  THE DEVOTED ONES PUBLICATION
+                  THE DEVOTED ONES PUBLICATION · {activeDevotional?.month || 'CURRENT EDITION'}
                 </span>
                 <h3 className="font-hyperbonnard text-2xl sm:text-3xl tracking-wide uppercase text-[#FFFFFF] leading-snug mb-2">
-                  WALKING WITH GOD IN YOUTH
+                  {activeDevotional?.title || 'WALKING WITH GOD IN YOUTH'}
                 </h3>
                 <p className="text-xs text-[#FFFFFF]/75 font-sans leading-relaxed">
-                  A monthly guide for deep scripture meditation, personal devotion, and purposeful kingdom living.
+                  {activeDevotional?.description || 'A monthly guide for deep scripture meditation, personal devotion, and purposeful kingdom living.'}
                 </p>
                 <div className="mt-4 pt-4 border-t border-[#FFFFFF]/10 flex items-center justify-between font-mono text-[11px] text-[#FFD700]">
                   <span>Daily Rhythms</span>
@@ -262,6 +362,12 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
                       Complete the three fields below to request the current monthly devotional e-book.
                     </p>
                   </div>
+
+                  {serverError && (
+                    <div className="mb-6 p-4 rounded-xl bg-[#F00020]/15 border border-[#F00020]/40 text-xs text-[#F00020] font-mono">
+                      {serverError}
+                    </div>
+                  )}
 
                   <form onSubmit={handleSubmit} noValidate className="space-y-6">
                     {/* Field 1: Full Name */}
@@ -419,25 +525,44 @@ export const DevotionalEbookPage: React.FC<DevotionalEbookPageProps> = ({
                     Thank You, {formData.fullName.split(' ')[0]}!
                   </h3>
 
-                  <div className="max-w-md mx-auto rounded-xl p-5 bg-[#FFD700]/10 border border-[#FFD700]/30 text-left text-xs sm:text-sm text-[#FFFFFF]/90 leading-relaxed mb-6 space-y-2">
-                    <p className="font-medium text-[#FFD700]">
-                      Your details have been successfully received:
+                  <div className="max-w-md mx-auto rounded-xl p-5 bg-[#FFD700]/10 border border-[#FFD700]/30 text-left text-xs sm:text-sm text-[#FFFFFF]/90 leading-relaxed mb-6 space-y-2.5">
+                    <p className="font-semibold text-[#FFD700] flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      <span>Download Initiated & Dispatched</span>
                     </p>
-                    <div className="font-mono text-xs text-[#FFFFFF]/80 space-y-1 pt-1">
+                    <p className="text-xs text-[#FFFFFF]/80">
+                      Your devotional e-book download started automatically. We have also sent a copy with your access link to your inbox.
+                    </p>
+                    <div className="font-mono text-xs text-[#FFFFFF]/80 space-y-1 pt-1.5 border-t border-[#FFD700]/20">
                       <div>Name: <span className="text-[#FFFFFF]">{formData.fullName}</span></div>
                       <div>Email: <span className="text-[#FFFFFF]">{formData.emailAddress}</span></div>
                       <div>Phone: <span className="text-[#FFFFFF]">{formData.phoneNumber}</span></div>
                     </div>
-                    <p className="pt-2 text-xs text-[#FFFFFF]/70 border-t border-[#FFD700]/20">
-                      Our monthly devotional distribution cycles are processed regularly. In the meantime, join our active fellowship circles to begin receiving daily teachings today!
-                    </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    {downloadInfo?.downloadUrl && (
+                      <a
+                        href={downloadInfo.downloadUrl}
+                        download={downloadInfo.fileName || 'The-Devoted-Ones-Devotional.pdf'}
+                        onClick={() => {
+                          fetch('/api/devotional/download-click', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ requestId: downloadInfo.requestId }),
+                          }).catch(() => {});
+                        }}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all cursor-pointer shadow-md"
+                      >
+                        <Download className="h-4 w-4" />
+                        <span>Download PDF Now</span>
+                      </a>
+                    )}
+
                     <button
                       type="button"
                       onClick={onOpenJoin}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-[#000000] bg-[#FFD700] hover:bg-[#FFFFFF] transition-all cursor-pointer shadow-md"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-[#FFFFFF] bg-white/10 hover:bg-white/20 border border-white/20 transition-all cursor-pointer shadow-md"
                     >
                       <span>Join Community Now</span>
                       <ArrowRight className="h-3.5 w-3.5" />

@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "devotionals": {
+      "title": "Devotional Publication",
+      "description": "Monthly devotional e-book publications and PDFs stored in Firebase Storage.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the devotional edition" },
+        "description": { "type": "string", "description": "Brief description of the devotional" },
+        "month": { "type": "string", "description": "Month/Year of publication" },
+        "fileUrl": { "type": "string", "description": "Download URL of the PDF in Firebase Storage" },
+        "fileName": { "type": "string", "description": "Original file name of the PDF" },
+        "fileSize": { "type": "number", "description": "File size in bytes" },
+        "isPublished": { "type": "boolean", "description": "Whether this devotional is currently the published edition" },
+        "downloadsCount": { "type": "number", "description": "Number of times this edition has been downloaded" },
+        "requestsCount": { "type": "number", "description": "Number of requests received for this edition" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of upload" },
+        "updatedAt": { "type": "string", "description": "ISO timestamp of last modification" }
+      },
+      "required": ["title", "fileUrl", "isPublished", "createdAt"]
+    },
+    "devotional_requests": {
+      "title": "Devotional Subscriber Request",
+      "description": "Information from visitors who request the devotional e-book.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name of the requester" },
+        "email": { "type": "string", "description": "Email address of the requester" },
+        "phone": { "type": "string", "description": "WhatsApp or phone number" },
+        "expectations": { "type": "string", "description": "What they expect from the devotional" },
+        "devotionalId": { "type": "string", "description": "ID of requested devotional" },
+        "devotionalTitle": { "type": "string", "description": "Title of requested devotional" },
+        "downloadUrl": { "type": "string", "description": "Download link provided" },
+        "downloaded": { "type": "boolean", "description": "Whether download was initiated" },
+        "emailSent": { "type": "boolean", "description": "Whether confirmation/link email was sent" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of request" }
+      },
+      "required": ["name", "email", "phone", "createdAt"]
+    },
+    "admins": {
+      "title": "Administrator",
+      "description": "Administrator account records authorized to manage devotionals and view requests.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Admin email address" },
+        "role": { "type": "string", "enum": ["admin", "superadmin"], "description": "Administrator role" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/devotionals/{devotionalId}": {
+      "schema": { "$ref": "#/entities/devotionals" },
+      "description": "Collection of published and past devotional e-books."
+    },
+    "/devotional_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/devotional_requests" },
+      "description": "Collection of all visitor devotional download requests."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/admins" },
+      "description": "Collection of administrator permissions and roles."
+    }
+  }
+}

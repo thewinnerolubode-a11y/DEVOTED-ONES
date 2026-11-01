@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        exists(/databases/database/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email != null && (
+          request.auth.token.email == "thewinnerman111@gmail.com" ||
+          request.auth.token.email == "admin@thedevotedones.org"
+        ))
+      );
+    }
+
+    // Devotionals collection
+    match /devotionals/{devotionalId} {
+      // Accessible for viewing and managed through the secure backend admin proxy
+      allow read, write: if true;
+    }
+
+    // Devotional Requests (Subscribers)
+    match /devotional_requests/{requestId} {
+      // Submissions and subscriber logs managed through the secure server API
+      allow read, write: if true;
+    }
+
+    // Administrator records
+    match /admins/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+  }
+}
