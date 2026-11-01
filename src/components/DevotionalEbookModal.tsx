@@ -22,7 +22,7 @@ interface EbookFormErrors {
   expectations?: string;
 }
 
-const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/BeAyO0iD9JE0QWBTc7b2Yq?s=cl&p=a&mlu=4&ilr=4';
+const WHATSAPP_COMMUNITY_URL = 'https://chat.whatsapp.com/DBtfCy9DYHQCKhsMPUzBej?s=cl&p=a&mlu=4&ilr=4&iam=2';
 const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymhg5xHdsOs_15e2ZxnQCN0VZ3ZxOVhF8zJPzXlfLh3oR6w27NQXznydk0PFNRkz6_2Q/exec';
 
 export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
@@ -65,9 +65,8 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      // Focus first input when opened
       setTimeout(() => nameInputRef.current?.focus(), 150);
-      // Fetch live published devotional
+
       fetch('/api/devotional/current')
         .then((r) => r.json())
         .then((data) => {
@@ -79,6 +78,7 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
     } else {
       document.body.style.overflow = 'unset';
     }
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -90,6 +90,7 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
         onClose();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
@@ -127,6 +128,7 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
   const handleFieldChange = (field: keyof EbookFormData, value: string) => {
     const updated = { ...formData, [field]: value };
     setFormData(updated);
+
     if (touched[field]) {
       setErrors(validate(updated));
     }
@@ -151,7 +153,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
-      // Auto-focus first invalid field
       if (validationErrors.name) {
         nameInputRef.current?.focus();
       } else if (validationErrors.email) {
@@ -161,13 +162,13 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
       } else if (validationErrors.expectations) {
         expectationsInputRef.current?.focus();
       }
+
       return;
     }
 
     setIsSubmitting(true);
     setServerError(null);
 
-    // Parallel direct ping to Google Apps Script backend
     try {
       fetch(GOOGLE_APPS_SCRIPT_URL, {
         method: 'POST',
@@ -207,7 +208,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
         previewUrl: data.previewUrl,
       });
 
-      // Automatically initiate the PDF download for the visitor
       if (data.downloadUrl) {
         try {
           const downloadAnchor = document.createElement('a');
@@ -215,15 +215,18 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
           downloadAnchor.setAttribute('download', data.fileName || 'The-Devoted-Ones-Devotional.pdf');
           downloadAnchor.target = '_blank';
           downloadAnchor.rel = 'noopener noreferrer';
+
           document.body.appendChild(downloadAnchor);
           downloadAnchor.click();
           document.body.removeChild(downloadAnchor);
 
-          // Track download click
           fetch('/api/devotional/download-click', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ requestId: data.requestId, devotionalId: data.devotional?.id }),
+            body: JSON.stringify({
+              requestId: data.requestId,
+              devotionalId: data.devotional?.id,
+            }),
           }).catch(() => {});
         } catch (downloadErr) {
           console.warn('Auto-download trigger notice:', downloadErr);
@@ -245,6 +248,7 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
       phone: '',
       expectations: '',
     });
+
     setTouched({});
     setErrors({});
     setServerError(null);
@@ -257,7 +261,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md">
-        {/* Backdrop click */}
         <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
         <motion.div
@@ -267,7 +270,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="relative w-full max-w-lg rounded-2xl border border-[#FFD700]/30 bg-[#0c0c0c] p-6 sm:p-8 shadow-[0_16px_50px_rgba(0,0,0,0.9)] z-10 my-auto text-left"
         >
-          {/* Header Close Button */}
           <button
             type="button"
             onClick={onClose}
@@ -281,7 +283,11 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
             <div>
               <div className="flex items-center gap-2.5 text-[#FFD700] text-xs font-semibold uppercase tracking-wider mb-2">
                 <BookOpen className="h-4 w-4" />
-                <span>{currentDevotional?.month ? `${currentDevotional.month} Edition` : 'Devotional Resource'}</span>
+                <span>
+                  {currentDevotional?.month
+                    ? `${currentDevotional.month} Edition`
+                    : 'Devotional Resource'}
+                </span>
               </div>
 
               <h2 className="font-hyperbonnard text-2xl sm:text-3xl uppercase tracking-wide text-white mb-2">
@@ -294,7 +300,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                   : "Make room for God's Word in your daily life."}
               </p>
 
-              {/* Server-side Error Alert */}
               {serverError && (
                 <div className="mb-5 p-3 rounded-lg bg-[#F00020]/15 border border-[#F00020]/40 flex items-start gap-2.5 text-xs text-[#F00020] font-sans">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -302,7 +307,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                 </div>
               )}
 
-              {/* Form Validation Summary Alert */}
               {!serverError && Object.keys(errors).length > 0 && Object.values(touched).some(Boolean) && (
                 <div className="mb-5 p-3 rounded-lg bg-[#F00020]/15 border border-[#F00020]/40 flex items-start gap-2.5 text-xs text-[#F00020] font-sans">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -311,7 +315,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
               )}
 
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                {/* 1. Name */}
                 <div>
                   <label htmlFor="ebook-name" className="block text-xs font-semibold uppercase tracking-wider text-white/90 mb-1.5 font-sans">
                     Name <span className="text-[#F00020]">*</span>
@@ -338,7 +341,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                   )}
                 </div>
 
-                {/* 2. Email Address */}
                 <div>
                   <label htmlFor="ebook-email" className="block text-xs font-semibold uppercase tracking-wider text-white/90 mb-1.5 font-sans">
                     Email Address <span className="text-[#F00020]">*</span>
@@ -367,7 +369,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                   )}
                 </div>
 
-                {/* 3. Phone Number */}
                 <div>
                   <label htmlFor="ebook-phone" className="block text-xs font-semibold uppercase tracking-wider text-white/90 mb-1.5 font-sans">
                     Phone Number <span className="text-[#F00020]">*</span>
@@ -396,7 +397,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                   )}
                 </div>
 
-                {/* 4. What do you expect from this devotional? */}
                 <div>
                   <label htmlFor="ebook-expectations" className="block text-xs font-semibold uppercase tracking-wider text-white/90 mb-1.5 font-sans">
                     What do you expect from this devotional? <span className="text-[#F00020]">*</span>
@@ -423,7 +423,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                   )}
                 </div>
 
-                {/* Submit Button */}
                 <div className="pt-2">
                   <button
                     type="submit"
@@ -446,7 +445,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
               </form>
             </div>
           ) : (
-            /* Clear Honest Confirmation Screen */
             <div className="py-4 text-center">
               <div className="mx-auto w-14 h-14 rounded-full bg-[#FFD700]/15 border border-[#FFD700] flex items-center justify-center text-[#FFD700] mb-4">
                 <CheckCircle2 className="h-7 w-7" />
@@ -465,9 +463,11 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
                   <CheckCircle2 className="h-4 w-4" />
                   <span>Devotional Ready & Download Initiated</span>
                 </div>
+
                 <p className="text-white/80">
                   Your devotional e-book download was initiated automatically. A confirmation and download link have also been sent to your inbox.
                 </p>
+
                 <div className="text-white/70 space-y-1 text-xs pt-1 border-t border-white/10">
                   <div>Recipient: <span className="text-white font-medium">{formData.name}</span></div>
                   <div>Email: <span className="text-white font-medium">{formData.email}</span></div>
@@ -476,7 +476,6 @@ export const DevotionalEbookModal: React.FC<DevotionalEbookModalProps> = ({
               </div>
 
               <div className="flex flex-col gap-3">
-                {/* Direct Manual Download Button if automatic download was blocked */}
                 {downloadInfo?.downloadUrl && (
                   <a
                     href={downloadInfo.downloadUrl}
